@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyVibe - Dashboard Student Productivity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background-color 0.4s ease, border-color 0.4s ease, color 0.2s ease;
+        }
+
+        /* Vibe Themes */
+        .theme-chill {
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #3b82f6 100%);
+        }
+        .theme-cyber {
+            background: linear-gradient(135deg, #0f172a 0%, #0284c7 50%, #7c3aed 100%);
+        }
+        .theme-forest {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #0d9488 100%);
+        }
+        .theme-space {
+            background: linear-gradient(135deg, #090d16 0%, #111827 50%, #1f2937 100%);
+        }
+
+        /* Glassmorphism Styles */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-card-dark {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+            outline: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Subtle Pulse Animation for Visualizer */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.03); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .visualizer-active {
+            animation: pulse-ring 2.5s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="theme-chill min-h-screen text-white pb-12 flex flex-col relative overflow-x-hidden selection:bg-pink-500 selection:text-white">
+
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-pink-500/20 blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-purple-600/20 blur-[120px]"></div>
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-6">
+        
+        <header class="glass-card rounded-3xl p-6 mb-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner backdrop-blur-md">
+                    <i data-lucide="sparkles" class="w-8 h-8 text-yellow-300 animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 id="greeting-text" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Studyses ✨</h1>
+                    <p id="quote-text" class="text-sm text-white/80 italic mt-0.5 max-w-xl">"Semangat!"</p>
+                </div>
+            </div>
+
+            <!-- Vibe Theme Selector -->
+            <div class="flex items-center gap-2 bg-black/20 p-2 rounded-2xl backdrop-blur-md border border-white/10">
+                <span class="text-xs font-semibold px-2 text-white/70">VIBE:</span>
+                <button onclick="setTheme('chill')" class="w-8 h-8 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 border border-white/40 hover:scale-110 transition-transform shadow-md" title="Chill Sunset"></button>
+                <button onclick="setTheme('cyber')" class="w-8 h-8 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 border border-white/40 hover:scale-110 transition-transform shadow-md" title="Cyber Neon"></button>
+                <button onclick="setTheme('forest')" class="w-8 h-8 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 border border-white/40 hover:scale-110 transition-transform shadow-md" title="Forest Focus"></button>
+                <button onclick="setTheme('space')" class="w-8 h-8 rounded-xl bg-gradient-to-r from-gray-900 to-slate-800 border border-white/40 hover:scale-110 transition-transform shadow-md" title="Deep Space"></button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            
+            <!-- Pomodoro Timer Box -->
+            <div class="glass-card rounded-3xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="timer" class="w-5 h-5 text-pink-300"></i>
+                        <h2 class="font-bold text-lg tracking-wide">Focus Pomodoro</h2>
+                    </div>
+                    <span id="pomo-mode-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-pink-500/30 border border-pink-400/40 text-pink-200">
+                        Mode Fokus
+                    </span>
+                </div>
+
+                <!-- Timer Ring Display -->
+                <div class="flex flex-col items-center justify-center my-4">
+                    <div class="text-6xl font-black tracking-tight font-mono drop-shadow-md my-2" id="timer-display">
+                        25:00
+                    </div>
+                    <p class="text-xs text-white/70 font-medium tracking-wider uppercase mt-1" id="timer-status-text">Siap untuk produktif?</p>
+                </div>
+
+                <!-- Timer Controls -->
+                <div class="flex items-center justify-center gap-3 mt-4">
+                    <button id="start-btn" onclick="toggleTimer()" class="flex-1 py-3 px-6 rounded-2xl bg-white text-gray-900 font-bold hover:bg-opacity-90 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2">
+                        <i data-lucide="play" class="w-4 h-4 fill-current"></i> <span id="start-btn-text">Mulai Fokus</span>
+                    </button>
+                    <button onclick="resetTimer()" class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 transition-all">
+                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="switchPomoMode()" class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 transition-all" title="Ganti Mode (Fokus/Istirahat)">
+                        <i data-lucide="coffee" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lo-Fi Ambient Visualizer Simulator -->
+            <div class="lg:col-span-2 glass-card rounded-3xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="headphones" class="w-5 h-5 text-sky-300"></i>
+                        <h2 class="font-bold text-lg tracking-wide">Ambient & Focus Sound Generator</h2>
+                    </div>
+                    <span id="audio-status" class="text-xs text-white/60 bg-black/20 px-3 py-1 rounded-full border border-white/10">Audio Muted</span>
+                </div>
+
+                <!-- Visualizer Dynamic Bars -->
+                <div id="visualizer-container" class="h-28 my-2 rounded-2xl bg-black/20 backdrop-blur-inner border border-white/10 flex items-end justify-center gap-1.5 p-4 visualizer-active">
+                    <!-- Dynamic SVG Bars populated by JS -->
+                </div>
+
+                <!-- Ambient Sound Controllers -->
+                <div class="grid grid-cols-3 gap-3 mt-4">
+                    <button id="ambient-rain" onclick="toggleAmbientSound('rain')" class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center gap-2 text-sm font-medium transition-all">
+                        <i data-lucide="cloud-rain" class="w-4 h-4 text-sky-300"></i> Hujan
+                    </button>
+                    <button id="ambient-waves" onclick="toggleAmbientSound('waves')" class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center gap-2 text-sm font-medium transition-all">
+                        <i data-lucide="waves" class="w-4 h-4 text-teal-300"></i> Ombak
+                    </button>
+                    <button id="ambient-white" onclick="toggleAmbientSound('white')" class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center gap-2 text-sm font-medium transition-all">
+                        <i data-lucide="zap" class="w-4 h-4 text-amber-300"></i> White Noise
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="flex items-center space-x-2 border-b border-white/15 mb-6 overflow-x-auto pb-2 scrollbar-none">
+            <button onclick="switchTab('tasks')" id="tab-tasks" class="tab-btn py-2.5 px-5 rounded-2xl font-bold text-sm bg-white/20 border border-white/30 backdrop-blur-md shadow-md flex items-center gap-2">
+                <i data-lucide="check-square" class="w-4 h-4"></i> Tugas & Task Tracker
+            </button>
+            <button onclick="switchTab('gpa')" id="tab-gpa" class="tab-btn py-2.5 px-5 rounded-2xl font-semibold text-sm hover:bg-white/10 border border-transparent text-white/80 flex items-center gap-2">
+                <i data-lucide="calculator" class="w-4 h-4"></i> Kalkulator IPK / IPS
+            </button>
+            <button onclick="switchTab('grade')" id="tab-grade" class="tab-btn py-2.5 px-5 rounded-2xl font-semibold text-sm hover:bg-white/10 border border-transparent text-white/80 flex items-center gap-2">
+                <i data-lucide="target" class="w-4 h-4"></i> Target Nilai Akhir
+            </button>
+            <button onclick="switchTab('notes')" id="tab-notes" class="tab-btn py-2.5 px-5 rounded-2xl font-semibold text-sm hover:bg-white/10 border border-transparent text-white/80 flex items-center gap-2">
+                <i data-lucide="file-text" class="w-4 h-4"></i> Vibe Scratchpad
+            </button>
+        </div>
+
+        <div id="content-tasks" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Add Task Form -->
+                <div class="glass-card rounded-3xl p-6 shadow-xl h-fit">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-300"></i> Tambah Tugas Baru
+                    </h3>
+                    <form onsubmit="addTask(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-white/70 mb-1">Judul Tugas / Praktikum</label>
+                            <input type="text" id="task-title" placeholder="Contoh: Laporan Modul 3 AI" required class="w-full glass-input px-4 py-2.5 rounded-xl text-sm placeholder-white/40 focus:ring-2 focus:ring-white/40">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-white/70 mb-1">Mata Kuliah</label>
+                            <input type="text" id="task-subject" placeholder="Contoh: Pemrograman Web" required class="w-full glass-input px-4 py-2.5 rounded-xl text-sm placeholder-white/40 focus:ring-2 focus:ring-white/40">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-white/70 mb-1">Deadline</label>
+                                <input type="date" id="task-deadline" required class="w-full glass-input px-3 py-2.5 rounded-xl text-sm text-white focus:ring-2 focus:ring-white/40">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-white/70 mb-1">Prioritas</label>
+                                <select id="task-priority" class="w-full glass-input px-3 py-2.5 rounded-xl text-sm bg-gray-900/80 text-white focus:ring-2 focus:ring-white/40">
+                                    <option value="Tinggi" class="bg-gray-800">🔥 Tinggi</option>
+                                    <option value="Sedang" selected class="bg-gray-800">⚡ Sedang</option>
+                                    <option value="Santai" class="bg-gray-800">🌱 Santai</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 mt-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Simpan Tugas
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Kanban Task Columns -->
+                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Belum Mulai Column -->
+                    <div class="glass-card-dark rounded-3xl p-4 flex flex-col h-[520px]">
+                        <div class="flex items-center justify-between mb-3 px-2">
+                            <span class="font-bold text-sm flex items-center gap-2 text-rose-300">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span> Belum Mulai
+                            </span>
+                            <span id="count-todo" class="text-xs bg-white/10 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="col-todo" class="space-y-3 overflow-y-auto pr-1 flex-1">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Dalam Proses Column -->
+                    <div class="glass-card-dark rounded-3xl p-4 flex flex-col h-[520px]">
+                        <div class="flex items-center justify-between mb-3 px-2">
+                            <span class="font-bold text-sm flex items-center gap-2 text-amber-300">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Sedang Dikerjakan
+                            </span>
+                            <span id="count-progress" class="text-xs bg-white/10 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="col-progress" class="space-y-3 overflow-y-auto pr-1 flex-1">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Selesai Column -->
+                    <div class="glass-card-dark rounded-3xl p-4 flex flex-col h-[520px]">
+                        <div class="flex items-center justify-between mb-3 px-2">
+                            <span class="font-bold text-sm flex items-center gap-2 text-emerald-300">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Selesai ✨
+                            </span>
+                            <span id="count-done" class="text-xs bg-white/10 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="col-done" class="space-y-3 overflow-y-auto pr-1 flex-1">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-gpa" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Inputs -->
+                <div class="lg:col-span-2 glass-card rounded-3xl p-6 shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold">Kalkulator Indeks Prestasi (IPS/IPK)</h3>
+                            <p class="text-xs text-white/70">Hitung perkiraan IP Semester dengan mudah & presisi.</p>
+                        </div>
+                        <button onclick="addCourseRow()" class="px-4 py-2 bg-white/15 hover:bg-white/25 rounded-xl border border-white/20 text-xs font-semibold flex items-center gap-1.5 transition-all">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Tambah Matkul
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="text-xs text-white/60 border-b border-white/10">
+                                    <th class="pb-3 font-semibold">Mata Kuliah</th>
+                                    <th class="pb-3 font-semibold w-24">SKS</th>
+                                    <th class="pb-3 font-semibold w-32">Nilai Huruf</th>
+                                    <th class="pb-3 font-semibold w-12"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="gpa-table-body" class="divide-y divide-white/10">
+                                <!-- Dynamic Course Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- GPA Result Summary -->
+                <div class="glass-card rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                            <i data-lucide="award" class="w-5 h-5 text-yellow-300"></i> Hasil Perhitungan
+                        </h3>
+                        
+                        <div class="bg-black/20 rounded-2xl p-6 border border-white/10 text-center my-4">
+                            <span class="text-xs text-white/60 uppercase font-semibold tracking-wider">Prediksi IPS</span>
+                            <div id="gpa-result" class="text-5xl font-black my-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-pink-200 to-white">
+                                0.00
+                            </div>
+                            <p id="gpa-status" class="text-xs text-white/80 italic">Masukkan data matkul untuk melihat prediksimu.</p>
+                        </div>
+
+                        <div class="space-y-2 text-xs text-white/80 mt-4">
+                            <div class="flex justify-between py-1 border-b border-white/10">
+                                <span>Total SKS:</span>
+                                <span id="total-sks" class="font-bold">0 SKS</span>
+                            </div>
+                            <div class="flex justify-between py-1 border-b border-white/10">
+                                <span>Total Bobot Mutu:</span>
+                                <span id="total-points" class="font-bold">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <button onclick="calculateGPA()" class="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 font-bold rounded-xl shadow-lg transition-all active:scale-95">
+                            Hitung Ulang IPS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-grade" class="tab-content hidden">
+            <div class="max-w-2xl mx-auto glass-card rounded-3xl p-6 sm:p-8 shadow-xl">
+                <h3 class="text-xl font-bold mb-1 flex items-center gap-2">
+                    <i data-lucide="target" class="w-6 h-6 text-pink-300"></i> Target Nilai Akhir Mata Kuliah
+                </h3>
+                <p class="text-xs text-white/70 mb-6">Hitung berapa nilai minimal UTS/UAS yang harus kamu capai agar lulus target huruf A/B!</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-white/70 mb-1">Nilai Tugas & Quiz (30%)</label>
+                        <input type="number" id="grade-tugas" placeholder="0 - 100" class="w-full glass-input px-4 py-2.5 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-white/70 mb-1">Nilai UTS (30%)</label>
+                        <input type="number" id="grade-uts" placeholder="0 - 100" class="w-full glass-input px-4 py-2.5 rounded-xl text-sm">
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-white/70 mb-1">Target Nilai Huruf yang Diinginkan</label>
+                    <select id="grade-target" class="w-full glass-input px-4 py-2.5 rounded-xl text-sm bg-gray-900/90 text-white">
+                        <option value="85">Target A (Minimal Nilai Akhir: 85)</option>
+                        <option value="75">Target B+ (Minimal Nilai Akhir: 75)</option>
+                        <option value="70">Target B (Minimal Nilai Akhir: 70)</option>
+                        <option value="60">Target C (Minimal Nilai Akhir: 60)</option>
+                    </select>
+                </div>
+
+                <button onclick="calculateRequiredUAS()" class="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 mb-6">
+                    Hitung Kebutuhan Nilai UAS
+                </button>
+
+                <!-- Result Card -->
+                <div id="grade-result-box" class="hidden bg-black/25 rounded-2xl p-5 border border-white/15 text-center">
+                    <span class="text-xs text-white/70">Nilai Minimal UAS (40%) yang Dibutuhkan:</span>
+                    <div id="required-uas-score" class="text-4xl font-black text-sky-300 my-1">88</div>
+                    <p id="grade-advice" class="text-xs text-white/80 mt-2">Ayo optimalkan belajar di minggu UAS!</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-notes" class="tab-content hidden">
+            <div class="glass-card rounded-3xl p-6 shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="edit-3" class="w-5 h-5 text-amber-300"></i>
+                        <h3 class="text-lg font-bold">Vibe Scratchpad (Autosave)</h3>
+                    </div>
+                    <span id="save-status" class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full flex items-center gap-1">
+                        <i data-lucide="check" class="w-3 h-3"></i> Tersimpan Otomatis
+                    </span>
+                </div>
+                <textarea id="scratchpad" oninput="saveNotes()" placeholder="Tulis catatan kilat, ide skripsi, rangkuman rumus, atau daftar belanja kost-an di sini..." class="w-full h-96 glass-input p-4 rounded-2xl text-sm leading-relaxed text-white placeholder-white/40 focus:ring-2 focus:ring-white/40 resize-none"></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // App State
+        let theme = localStorage.getItem('studyvibe_theme') || 'chill';
+        let timerInterval = null;
+        let timerSeconds = 25 * 60;
+        let isTimerRunning = false;
+        let timerMode = 'focus'; // 'focus' or 'break'
+        
+        let tasks = JSON.parse(localStorage.getItem('studyvibe_tasks')) || [
+            { id: 1, title: 'Revisi Bab 2 Skripsi', subject: 'Metodologi Penelitian', deadline: '2026-10-20', priority: 'Tinggi', status: 'todo' },
+            { id: 2, title: 'Praktikum Web Dashboard', subject: 'Pemrograman Web', deadline: '2026-10-18', priority: 'Sedang', status: 'progress' }
+        ];
+
+        let courses = JSON.parse(localStorage.getItem('studyvibe_courses')) || [
+            { name: 'Pemrograman Web', sks: 3, grade: 'A' },
+            { name: 'Basis Data Lanjut', sks: 3, grade: 'B+' },
+            { name: 'Kecerdasan Buatan', sks: 3, grade: 'A' }
+        ];
+
+        // --- Init Functions ---
+        window.onload = function() {
+            lucide.createIcons();
+            setTheme(theme);
+            initGreeting();
+            updateTimerDisplay();
+            renderVisualizerBars();
+            renderTasks();
+            renderGPATable();
+            loadNotes();
+        };
+
+        function initGreeting() {
+            const hour = new Date().getHours();
+            const greetingText = document.getElementById('greeting-text');
+            let greet = 'Selamat belajar';
+            if (hour < 11) greet = 'Selamat Pagi';
+            else if (hour < 15) greet = 'Selamat Siang';
+            else if (hour < 18) greet = 'Selamat Sore';
+            else greet = 'Selamat Malam';
+
+            greetingText.innerText = `${greet}, ✨`;
+
+            const quotes = [
+                '"Semangat belajar!"'
+            ];
+            document.getElementById('quote-text').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+        }
+
+        function setTheme(newTheme) {
+            theme = newTheme;
+            localStorage.setItem('studyvibe_theme', newTheme);
+            document.body.className = `theme-${newTheme} min-h-screen text-white pb-12 flex flex-col relative overflow-x-hidden selection:bg-pink-500 selection:text-white`;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-white/20', 'border-white/30', 'shadow-md', 'font-bold');
+                el.classList.add('hover:bg-white/10', 'border-transparent', 'text-white/80', 'font-semibold');
+            });
+
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.classList.add('bg-white/20', 'border-white/30', 'shadow-md', 'font-bold');
+            activeBtn.classList.remove('hover:bg-white/10', 'border-transparent', 'text-white/80');
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const secs = (timerSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+        }
+
+        function toggleTimer() {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                document.getElementById('start-btn-text').innerText = 'Lanjutkan';
+                document.getElementById('timer-status-text').innerText = 'Timer Dijeda';
+            } else {
+                isTimerRunning = true;
+                document.getElementById('start-btn-text').innerText = 'Jeda';
+                document.getElementById('timer-status-text').innerText = timerMode === 'focus' ? 'Fokus bekerja/belajar...' : 'Nikmati waktu istirahat!';
+                
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        playSynthesizedBeep();
+                        switchPomoMode();
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerSeconds = timerMode === 'focus' ? 25 * 60 : 5 * 60;
+            document.getElementById('start-btn-text').innerText = 'Mulai Fokus';
+            document.getElementById('timer-status-text').innerText = 'Siap untuk produktif?';
+            updateTimerDisplay();
+        }
+
+        function switchPomoMode() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            if (timerMode === 'focus') {
+                timerMode = 'break';
+                timerSeconds = 5 * 60;
+                document.getElementById('pomo-mode-badge').innerText = 'Istirahat Singkat';
+                document.getElementById('pomo-mode-badge').className = 'px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/30 border border-emerald-400/40 text-emerald-200';
+            } else {
+                timerMode = 'focus';
+                timerSeconds = 25 * 60;
+                document.getElementById('pomo-mode-badge').innerText = 'Mode Fokus';
+                document.getElementById('pomo-mode-badge').className = 'px-3 py-1 rounded-full text-xs font-semibold bg-pink-500/30 border border-pink-400/40 text-pink-200';
+            }
+            document.getElementById('start-btn-text').innerText = 'Mulai';
+            document.getElementById('timer-status-text').innerText = 'Siap berehat / fokus kembali?';
+            updateTimerDisplay();
+        }
+
+        let audioCtx = null;
+        let ambientOscillator = null;
+
+        function playSynthesizedBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5 note
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 1.2);
+            } catch(e) { console.log('Audio error:', e); }
+        }
+
+        function renderVisualizerBars() {
+            const container = document.getElementById('visualizer-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 28; i++) {
+                const height = Math.floor(Math.random() * 70) + 15;
+                const bar = document.createElement('div');
+                bar.className = 'w-2 bg-gradient-to-t from-sky-400 to-pink-300 rounded-full transition-all duration-300';
+                bar.style.height = `${height}%`;
+                container.appendChild(bar);
+            }
+        }
+
+        // Animate visualizer bars continuously for aesthetic ambient vibe
+        setInterval(() => {
+            const bars = document.getElementById('visualizer-container').children;
+            for (let bar of bars) {
+                const newHeight = Math.floor(Math.random() * 80) + 15;
+                bar.style.height = `${newHeight}%`;
+            }
+        }, 400);
+
+        function toggleAmbientSound(type) {
+            const statusLabel = document.getElementById('audio-status');
+            if (ambientOscillator) {
+                ambientOscillator.stop();
+                ambientOscillator = null;
+                statusLabel.innerText = 'Audio Muted';
+                statusLabel.className = 'text-xs text-white/60 bg-black/20 px-3 py-1 rounded-full border border-white/10';
+                return;
+            }
+
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                ambientOscillator = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                if (type === 'rain') ambientOscillator.frequency.value = 120;
+                else if (type === 'waves') ambientOscillator.frequency.value = 80;
+                else ambientOscillator.frequency.value = 200;
+
+                ambientOscillator.type = 'triangle';
+                gain.gain.value = 0.05;
+
+                ambientOscillator.connect(gain);
+                gain.connect(audioCtx.destination);
+                ambientOscillator.start();
+
+                statusLabel.innerText = `Playing ${type.toUpperCase()} Ambient`;
+                statusLabel.className = 'text-xs text-emerald-300 bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-400/30 animate-pulse';
+            } catch(e) { console.log(e); }
+        }
+
+        function renderTasks() {
+            const colTodo = document.getElementById('col-todo');
+            const colProgress = document.getElementById('col-progress');
+            const colDone = document.getElementById('col-done');
+
+            colTodo.innerHTML = '';
+            colProgress.innerHTML = '';
+            colDone.innerHTML = '';
+
+            let counts = { todo: 0, progress: 0, done: 0 };
+
+            tasks.forEach(task => {
+                counts[task.status]++;
+                const card = document.createElement('div');
+                card.className = 'bg-white/10 p-3.5 rounded-2xl border border-white/15 backdrop-blur-md shadow-md space-y-2 hover:bg-white/15 transition-all';
+                
+                const priorityColor = task.priority === 'Tinggi' ? 'text-rose-300 bg-rose-500/20 border-rose-400/30' : 
+                                     task.priority === 'Sedang' ? 'text-amber-300 bg-amber-500/20 border-amber-400/30' : 'text-emerald-300 bg-emerald-500/20 border-emerald-400/30';
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <h4 class="font-bold text-sm text-white leading-snug">${escapeHtml(task.title)}</h4>
+                        <button onclick="deleteTask(${task.id})" class="text-white/40 hover:text-rose-400 transition-colors p-1">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                    <div class="text-xs text-white/70 font-medium">${escapeHtml(task.subject)}</div>
+                    <div class="flex items-center justify-between text-[11px] pt-1">
+                        <span class="px-2 py-0.5 rounded-md border ${priorityColor}">${task.priority}</span>
+                        <span class="text-white/60">📅 ${task.deadline}</span>
+                    </div>
+                    <div class="flex items-center justify-end gap-1 pt-2 border-t border-white/10 mt-2">
+                        ${task.status !== 'todo' ? `<button onclick="moveTask(${task.id}, 'prev')" class="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs">◀</button>` : ''}
+                        ${task.status !== 'done' ? `<button onclick="moveTask(${task.id}, 'next')" class="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs">▶</button>` : ''}
+                    </div>
+                `;
+
+                if (task.status === 'todo') colTodo.appendChild(card);
+                else if (task.status === 'progress') colProgress.appendChild(card);
+                else colDone.appendChild(card);
+            });
+
+            document.getElementById('count-todo').innerText = counts.todo;
+            document.getElementById('count-progress').innerText = counts.progress;
+            document.getElementById('count-done').innerText = counts.done;
+
+            lucide.createIcons();
+            localStorage.setItem('studyvibe_tasks', JSON.stringify(tasks));
+        }
+
+        function addTask(e) {
+            e.preventDefault();
+            const title = document.getElementById('task-title').value;
+            const subject = document.getElementById('task-subject').value;
+            const deadline = document.getElementById('task-deadline').value;
+            const priority = document.getElementById('task-priority').value;
+
+            tasks.push({ id: Date.now(), title, subject, deadline, priority, status: 'todo' });
+            renderTasks();
+            e.target.reset();
+        }
+
+        function moveTask(id, dir) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            const stages = ['todo', 'progress', 'done'];
+            let currentIdx = stages.indexOf(task.status);
+            if (dir === 'next' && currentIdx < 2) task.status = stages[currentIdx + 1];
+            if (dir === 'prev' && currentIdx > 0) task.status = stages[currentIdx - 1];
+
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            renderTasks();
+        }
+
+        const gradeValues = { 'A': 4.0, 'A-': 3.7, 'B+': 3.3, 'B': 3.0, 'B-': 2.7, 'C+': 2.3, 'C': 2.0, 'D': 1.0, 'E': 0.0 };
+
+        function renderGPATable() {
+            const tbody = document.getElementById('gpa-table-body');
+            tbody.innerHTML = '';
+
+            courses.forEach((course, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'group';
+                tr.innerHTML = `
+                    <td class="py-2.5 pr-2">
+                        <input type="text" value="${escapeHtml(course.name)}" onchange="updateCourse(${index}, 'name', this.value)" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="number" value="${course.sks}" min="1" max="6" onchange="updateCourse(${index}, 'sks', parseInt(this.value) || 0)" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <select onchange="updateCourse(${index}, 'grade', this.value)" class="w-full glass-input px-2 py-1.5 rounded-lg text-xs bg-gray-900/80">
+                            ${Object.keys(gradeValues).map(g => `<option value="${g}" ${course.grade === g ? 'selected' : ''}>${g} (${gradeValues[g].toFixed(1)})</option>`).join('')}
+                        </select>
+                    </td>
+                    <td class="py-2.5 pl-2 text-center">
+                        <button onclick="removeCourse(${index})" class="text-white/40 hover:text-rose-400 p-1">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            calculateGPA();
+            lucide.createIcons();
+        }
+
+        function addCourseRow() {
+            courses.push({ name: 'Mata Kuliah Baru', sks: 3, grade: 'A' });
+            renderGPATable();
+        }
+
+        function updateCourse(index, field, value) {
+            courses[index][field] = value;
+            calculateGPA();
+            localStorage.setItem('studyvibe_courses', JSON.stringify(courses));
+        }
+
+        function removeCourse(index) {
+            courses.splice(index, 1);
+            renderGPATable();
+        }
+
+        function calculateGPA() {
+            let totalSKS = 0;
+            let totalPoints = 0;
+
+            courses.forEach(c => {
+                const sks = parseInt(c.sks) || 0;
+                const point = gradeValues[c.grade] || 0;
+                totalSKS += sks;
+                totalPoints += sks * point;
+            });
+
+            const gpa = totalSKS > 0 ? (totalPoints / totalSKS).toFixed(2) : '0.00';
+            document.getElementById('gpa-result').innerText = gpa;
+            document.getElementById('total-sks').innerText = `${totalSKS} SKS`;
+            document.getElementById('total-points').innerText = totalPoints.toFixed(2);
+
+            const status = document.getElementById('gpa-status');
+            if (gpa >= 3.5) status.innerText = '✨ Luar Biasa! Calon Cumlaude!';
+            else if (gpa >= 3.0) status.innerText = '👍 Hasil yang Sangat Baik, Pertahankan!';
+            else if (gpa >= 2.0) status.innerText = '💪 Tetap Semangat, Masih Bisa Ditingkatkan!';
+            else status.innerText = '⚠️ Perlu Evaluasi Strategi Belajar.';
+
+            localStorage.setItem('studyvibe_courses', JSON.stringify(courses));
+        }
+
+        function calculateRequiredUAS() {
+            const tugas = parseFloat(document.getElementById('grade-tugas').value) || 0;
+            const uts = parseFloat(document.getElementById('grade-uts').value) || 0;
+            const target = parseFloat(document.getElementById('grade-target').value) || 85;
+
+            // Weight calculation: Tugas (30%), UTS (30%), UAS (40%)
+            const currentPoints = (tugas * 0.3) + (uts * 0.3);
+            const neededFromUAS = target - currentPoints;
+            const requiredUAS = Math.ceil(neededFromUAS / 0.4);
+
+            const resultBox = document.getElementById('grade-result-box');
+            const scoreDisplay = document.getElementById('required-uas-score');
+            const advice = document.getElementById('grade-advice');
+
+            resultBox.classList.remove('hidden');
+
+            if (requiredUAS <= 0) {
+                scoreDisplay.innerText = '0 (Aman!)';
+                advice.innerText = '🎉 Nilai Tugas & UTS kamu sudah mencukupi target!';
+            } else if (requiredUAS > 100) {
+                scoreDisplay.innerText = `${requiredUAS} (>100)`;
+                advice.innerText = '⚠️ Cukup berat, coba maksimalkan poin dari tugas tambahan jika ada.';
+            } else {
+                scoreDisplay.innerText = requiredUAS;
+                advice.innerText = `Kamu butuh minimal nilai ${requiredUAS} di UAS untuk aman mencapai target!`;
+            }
+        }
+
+        function saveNotes() {
+            const text = document.getElementById('scratchpad').value;
+            localStorage.setItem('studyvibe_notes', text);
+            const status = document.getElementById('save-status');
+            status.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> Tersimpan Otomatis`;
+            lucide.createIcons();
+        }
+
+        function loadNotes() {
+            const saved = localStorage.getItem('studyvibe_notes');
+            if (saved !== null) {
+                document.getElementById('scratchpad').value = saved;
+            }
+        }
+
+        // Security Utility Helper
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
+    </script>
+</body>
+</html>
